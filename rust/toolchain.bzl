@@ -326,12 +326,16 @@ def _symlink_sysroot_tree(ctx, name, target):
         # Parse the path to the file relative to the workspace root so a
         # symlink matching this path can be created within the sysroot.
 
+        file_path = file.path
+
+        # Removes file's root path to support derived files when sibling layout is enabled.
+        if file.root.path and file_path.startswith(file.root.path):
+            file_path = file_path[len(file.root.path):]
+
         # The code blow attempts to parse any workspace names out of the
         # path. For local targets, this code is a noop.
         if target.label.workspace_root:
-            file_path = file.path.split(target.label.workspace_root, 1)[-1]
-        else:
-            file_path = file.path
+            file_path = file_path.split(target.label.workspace_root, 1)[-1]
 
         symlink = ctx.actions.declare_file("{}/{}".format(name, file_path.lstrip("/")))
 
