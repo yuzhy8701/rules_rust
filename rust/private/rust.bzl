@@ -296,6 +296,7 @@ def _rust_test_impl(ctx):
 
     toolchain = find_toolchain(ctx)
 
+    crate_name = compute_crate_name(ctx.workspace_name, ctx.label, toolchain, ctx.attr.crate_name)
     crate_type = "bin"
     deps = transform_deps(ctx.attr.deps)
     proc_macro_deps = transform_deps(ctx.attr.proc_macro_deps + get_import_macro_deps(ctx))
@@ -309,13 +310,8 @@ def _rust_test_impl(ctx):
         # Target is building the crate in `test` config
         crate = ctx.attr.crate[rust_common.crate_info] if rust_common.crate_info in ctx.attr.crate else ctx.attr.crate[rust_common.test_crate_info].crate
 
-        output_hash = determine_output_hash(crate.root, ctx.label)
         output = ctx.actions.declare_file(
-            "test-%s/%s%s" % (
-                output_hash,
-                ctx.label.name,
-                toolchain.binary_ext,
-            ),
+            ctx.label.name + toolchain.binary_ext,
         )
 
         srcs, crate_root = transform_sources(ctx, ctx.files.srcs, getattr(ctx.file, "crate_root", None))
@@ -342,7 +338,7 @@ def _rust_test_impl(ctx):
 
         # Build the test binary using the dependency's srcs.
         crate_info_dict = dict(
-            name = crate.name,
+            name = crate_name,
             type = crate_type,
             root = crate.root,
             srcs = depset(srcs, transitive = [crate.srcs]),
@@ -368,13 +364,8 @@ def _rust_test_impl(ctx):
             crate_root = crate_root_src(ctx.attr.name, ctx.files.srcs, crate_root_type)
         srcs, crate_root = transform_sources(ctx, ctx.files.srcs, crate_root)
 
-        output_hash = determine_output_hash(crate_root, ctx.label)
         output = ctx.actions.declare_file(
-            "test-%s/%s%s" % (
-                output_hash,
-                ctx.label.name,
-                toolchain.binary_ext,
-            ),
+            ctx.label.name + toolchain.binary_ext,
         )
 
         data_paths = depset(direct = getattr(ctx.attr, "data", [])).to_list()
@@ -386,7 +377,7 @@ def _rust_test_impl(ctx):
 
         # Target is a standalone crate. Build the test binary as its own crate.
         crate_info_dict = dict(
-            name = compute_crate_name(ctx.workspace_name, ctx.label, toolchain, ctx.attr.crate_name),
+            name = crate_name,
             type = crate_type,
             root = crate_root,
             srcs = depset(srcs),
@@ -1342,9 +1333,7 @@ rust_test = rule(
         )
         ```
 
-        Run the test with `bazel test //hello_lib:hello_lib_test`. The crate
-        will be built using the same crate name as the underlying ":hello_lib"
-        crate.
+        Run the test with `bazel test //hello_lib:hello_lib_test`.
 
         ### Example: `test` directory
 
