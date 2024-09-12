@@ -309,14 +309,21 @@ def _rust_test_impl(ctx):
         # Target is building the crate in `test` config
         crate = ctx.attr.crate[rust_common.crate_info] if rust_common.crate_info in ctx.attr.crate else ctx.attr.crate[rust_common.test_crate_info].crate
 
-        output_hash = determine_output_hash(crate.root, ctx.label)
-        output = ctx.actions.declare_file(
-            "test-%s/%s%s" % (
-                output_hash,
-                ctx.label.name,
-                toolchain.binary_ext,
-            ),
-        )
+        if toolchain._incompatible_change_rust_test_compilation_output_directory:
+            crate_name = compute_crate_name(ctx.workspace_name, ctx.label, toolchain, ctx.attr.crate_name)
+            output = ctx.actions.declare_file(
+                ctx.label.name + toolchain.binary_ext,
+            )
+        else:
+            crate_name = crate.name
+            output_hash = determine_output_hash(crate.root, ctx.label)
+            output = ctx.actions.declare_file(
+                "test-%s/%s%s" % (
+                    output_hash,
+                    ctx.label.name,
+                    toolchain.binary_ext,
+                ),
+            )
 
         srcs, crate_root = transform_sources(ctx, ctx.files.srcs, getattr(ctx.file, "crate_root", None))
 
@@ -342,7 +349,7 @@ def _rust_test_impl(ctx):
 
         # Build the test binary using the dependency's srcs.
         crate_info_dict = dict(
-            name = crate.name,
+            name = crate_name,
             type = crate_type,
             root = crate.root,
             srcs = depset(srcs, transitive = [crate.srcs]),
@@ -368,14 +375,19 @@ def _rust_test_impl(ctx):
             crate_root = crate_root_src(ctx.attr.name, ctx.attr.crate_name, ctx.files.srcs, crate_root_type)
         srcs, crate_root = transform_sources(ctx, ctx.files.srcs, crate_root)
 
-        output_hash = determine_output_hash(crate_root, ctx.label)
-        output = ctx.actions.declare_file(
-            "test-%s/%s%s" % (
-                output_hash,
-                ctx.label.name,
-                toolchain.binary_ext,
-            ),
-        )
+        if toolchain._incompatible_change_rust_test_compilation_output_directory:
+            output = ctx.actions.declare_file(
+                ctx.label.name + toolchain.binary_ext,
+            )
+        else:
+            output_hash = determine_output_hash(crate_root, ctx.label)
+            output = ctx.actions.declare_file(
+                "test-%s/%s%s" % (
+                    output_hash,
+                    ctx.label.name,
+                    toolchain.binary_ext,
+                ),
+            )
 
         data_paths = depset(direct = getattr(ctx.attr, "data", [])).to_list()
         rustc_env = expand_dict_value_locations(
@@ -1348,9 +1360,7 @@ rust_test = rule(
         )
         ```
 
-        Run the test with `bazel test //hello_lib:hello_lib_test`. The crate
-        will be built using the same crate name as the underlying ":hello_lib"
-        crate.
+        Run the test with `bazel test //hello_lib:hello_lib_test`.
 
         ### Example: `test` directory
 

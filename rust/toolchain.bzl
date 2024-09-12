@@ -18,6 +18,7 @@ load(
     "is_std_dylib",
     "make_static_lib_symlink",
 )
+load("//rust/settings:incompatible.bzl", "IncompatibleFlagInfo")
 
 rust_analyzer_toolchain = _rust_analyzer_toolchain
 rustfmt_toolchain = _rustfmt_toolchain
@@ -696,6 +697,7 @@ def _rust_toolchain_impl(ctx):
         _experimental_use_cc_common_link = _experimental_use_cc_common_link(ctx),
         _experimental_use_global_allocator = experimental_use_global_allocator,
         _experimental_use_coverage_metadata_files = ctx.attr._experimental_use_coverage_metadata_files[BuildSettingInfo].value,
+        _incompatible_change_rust_test_compilation_output_directory = ctx.attr._incompatible_change_rust_test_compilation_output_directory[IncompatibleFlagInfo].enabled,
         _toolchain_generated_sysroot = ctx.attr._toolchain_generated_sysroot[BuildSettingInfo].value,
         _no_std = no_std,
     )
@@ -880,6 +882,9 @@ rust_toolchain = rule(
                 "Label to a boolean build setting that informs the target build whether a global allocator is being used." +
                 "This flag is only relevant when used together with --@rules_rust//rust/settings:experimental_use_global_allocator."
             ),
+        ),
+        "_incompatible_change_rust_test_compilation_output_directory": attr.label(
+            default = Label("//rust/settings:incompatible_change_rust_test_compilation_output_directory"),
         ),
         "_no_std": attr.label(
             default = Label("//:no_std"),

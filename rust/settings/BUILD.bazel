@@ -1,6 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 load("//rust/private:unpretty.bzl", "rust_unpretty_flag")
+load(":incompatible.bzl", "incompatible_flag")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -88,6 +89,13 @@ bool_flag(
 bool_flag(
     name = "toolchain_generated_sysroot",
     build_setting_default = True,
+)
+
+# A flag to put rust_test compilation outputs in the same directory as the rust_library compilation outputs.
+incompatible_flag(
+    name = "incompatible_change_rust_test_compilation_output_directory",
+    build_setting_default = False,
+    issue = "https://github.com/bazelbuild/rules_rust/issues/2827",
 )
 
 # A flag to control whether to link libstd dynamically.
