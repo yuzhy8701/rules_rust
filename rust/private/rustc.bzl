@@ -398,12 +398,11 @@ def get_cc_user_link_flags(ctx):
     """
     return ctx.fragments.cpp.linkopts
 
-def get_linker_and_args(ctx, attr, crate_type, cc_toolchain, feature_configuration, rpaths, add_flags_for_binary = False):
+def get_linker_and_args(ctx, crate_type, cc_toolchain, feature_configuration, rpaths, add_flags_for_binary = False):
     """Gathers cc_common linker information
 
     Args:
         ctx (ctx): The current target's context object
-        attr (struct): Attributes to use in gathering linker args
         crate_type (str): The target crate's type (i.e. "bin", "proc-macro", etc.).
         cc_toolchain (CcToolchain): cc_toolchain for which we are creating build variables.
         feature_configuration (FeatureConfiguration): Feature configuration to be queried.
@@ -437,13 +436,6 @@ def get_linker_and_args(ctx, attr, crate_type, cc_toolchain, feature_configurati
     else:
         fail("Unknown `crate_type`: {}".format(crate_type))
 
-    # Add linkopts from dependencies. This includes linkopts from transitive
-    # dependencies since they get merged up.
-    for dep in getattr(attr, "deps", []):
-        if CcInfo in dep and dep[CcInfo].linking_context:
-            for linker_input in dep[CcInfo].linking_context.linker_inputs.to_list():
-                for flag in linker_input.user_link_flags:
-                    user_link_flags.append(flag)
     link_variables = cc_common.create_link_variables(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -1013,7 +1005,7 @@ def construct_arguments(
             else:
                 rpaths = depset()
 
-            ld, link_args, link_env = get_linker_and_args(ctx, attr, crate_info.type, cc_toolchain, feature_configuration, rpaths, add_flags_for_binary = add_flags_for_binary)
+            ld, link_args, link_env = get_linker_and_args(ctx, crate_info.type, cc_toolchain, feature_configuration, rpaths, add_flags_for_binary = add_flags_for_binary)
 
             env.update(link_env)
             rustc_flags.add(ld, format = "--codegen=linker=%s")
@@ -1957,6 +1949,9 @@ def _portable_link_flags(lib, use_pic, ambiguous_libs, get_lib_name, for_windows
 
     return []
 
+def _add_user_link_flags(ret, linker_input):
+    ret.extend(["--codegen=link-arg={}".format(flag) for flag in linker_input.user_link_flags])
+
 def _make_link_flags_windows(make_link_flags_args, flavor_msvc):
     linker_input, use_pic, ambiguous_libs, include_link_flags = make_link_flags_args
     ret = []
@@ -1975,6 +1970,7 @@ def _make_link_flags_windows(make_link_flags_args, flavor_msvc):
                 ])
         elif include_link_flags:
             ret.extend(_portable_link_flags(lib, use_pic, ambiguous_libs, get_lib_name_for_windows, for_windows = True, flavor_msvc = flavor_msvc))
+    _add_user_link_flags(ret, linker_input)
     return ret
 
 def _make_link_flags_windows_msvc(make_link_flags_args):
@@ -1994,6 +1990,7 @@ def _make_link_flags_darwin(make_link_flags_args):
             ])
         elif include_link_flags:
             ret.extend(_portable_link_flags(lib, use_pic, ambiguous_libs, get_lib_name_default, for_darwin = True))
+    _add_user_link_flags(ret, linker_input)
     return ret
 
 def _make_link_flags_default(make_link_flags_args):
@@ -2011,6 +2008,7 @@ def _make_link_flags_default(make_link_flags_args):
             ])
         elif include_link_flags:
             ret.extend(_portable_link_flags(lib, use_pic, ambiguous_libs, get_lib_name_default))
+    _add_user_link_flags(ret, linker_input)
     return ret
 
 def _libraries_dirnames(make_link_flags_args):
