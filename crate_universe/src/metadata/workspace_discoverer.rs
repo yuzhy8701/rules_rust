@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::Path;
 
 use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
@@ -30,18 +29,16 @@ impl DiscoveredWorkspaces {
 pub(crate) fn discover_workspaces(
     cargo_toml_paths: BTreeSet<Utf8PathBuf>,
     known_manifests: &BTreeMap<Utf8PathBuf, Manifest>,
-    bazel_workspace_root: &Path,
 ) -> Result<DiscoveredWorkspaces> {
     let mut manifest_cache = ManifestCache {
         cache: BTreeMap::new(),
         known_manifests,
     };
-    discover_workspaces_with_cache(cargo_toml_paths, bazel_workspace_root, &mut manifest_cache)
+    discover_workspaces_with_cache(cargo_toml_paths, &mut manifest_cache)
 }
 
 fn discover_workspaces_with_cache(
     cargo_toml_paths: BTreeSet<Utf8PathBuf>,
-    bazel_workspace_root: &Path,
     manifest_cache: &mut ManifestCache,
 ) -> Result<DiscoveredWorkspaces> {
     let mut discovered_workspaces = DiscoveredWorkspaces {
@@ -89,27 +86,9 @@ fn discover_workspaces_with_cache(
             .transpose()?;
 
         'per_child: for entry in walkdir::WalkDir::new(workspace_path.parent().unwrap())
-            .follow_links(true)
-            .follow_root_links(true)
+            .follow_links(false)
+            .follow_root_links(false)
             .into_iter()
-            // Avoid traversing the bazel-$workspace symlink which mirrors the whole source root.
-            // This is not super correct - technically the symlinks can be renamed,
-            // and technically people can create symlinks they care about which match this pattern to.
-            // But it's Good Enough.
-            .filter_entry(|e| {
-                if !e.path_is_symlink() {
-                    return true;
-                }
-                if e.path().parent().unwrap() != bazel_workspace_root {
-                    return true;
-                }
-                if let Some(file_name) = e.file_name().to_str() {
-                    if file_name.starts_with("bazel-") || file_name.starts_with(".bazel") {
-                        return false;
-                    }
-                }
-                true
-            })
         {
             let entry = match entry {
                 Ok(entry) => entry,
@@ -279,13 +258,6 @@ mod test {
 
         let mut expected = ws1_discovered_workspaces(&root_dir);
 
-        // This isn't at the bazel repo root level, so gets included.
-        expected
-            .workspaces_to_members
-            .get_mut(&root_dir.join("ws1").join("Cargo.toml"))
-            .unwrap()
-            .insert(root_dir.join("ws1").join("bazel-ws1").join("Cargo.toml"));
-
         expected.workspaces_to_members.insert(
             root_dir.join("ws2").join("Cargo.toml"),
             BTreeSet::from([
@@ -313,7 +285,6 @@ mod test {
             .into_iter()
             .collect(),
             &BTreeMap::new(),
-            root_dir.as_std_path(),
         )
         .unwrap();
 
@@ -348,7 +319,6 @@ mod test {
                 .into_iter()
                 .collect(),
             &BTreeMap::new(),
-            root_dir.join("ws1").as_std_path(),
         )
         .unwrap();
 
@@ -377,7 +347,6 @@ mod test {
                 .into_iter()
                 .collect(),
             &BTreeMap::new(),
-            root_dir.as_std_path(),
         )
         .unwrap();
 
@@ -436,7 +405,6 @@ mod test {
             .into_iter()
             .collect(),
             &BTreeMap::new(),
-            root_dir.as_std_path(),
         )
         .unwrap();
 
