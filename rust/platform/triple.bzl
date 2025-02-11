@@ -21,19 +21,22 @@ def triple(triple):
             - abi (str, optional): The abi to use or None if abi does not apply.
             - str (str): Original string representation of the triple
     """
-    if triple == "wasm32-wasi":
+    if triple in ("wasm32-wasi", "wasm32-wasip1"):
+        trip = triple
+        if trip == "wasm32-wasi":
+            trip = "wasm32-wasip1"
         return struct(
-            arch = "wasm32",
-            system = "wasi",
-            vendor = "wasi",
+            arch = trip.split("-")[0],
+            vendor = trip.split("-")[1],
+            system = trip.split("-")[1],
             abi = None,
-            str = triple,
+            str = trip,
         )
     elif triple in ("aarch64-fuchsia", "x86_64-fuchsia"):
         return struct(
             arch = triple.split("-")[0],
+            vendor = "unknown",
             system = "fuchsia",
-            vendor = "fuchsia",
             abi = None,
             str = triple,
         )

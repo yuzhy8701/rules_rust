@@ -97,6 +97,7 @@ def _annotation(
         build_script_rundir = None,
         build_script_rustc_env = None,
         build_script_toolchains = None,
+        build_script_use_default_shell_env = None,
         compile_data = None,
         compile_data_glob = None,
         crate_features = None,
@@ -140,6 +141,8 @@ def _annotation(
         build_script_rustc_env (dict, optional): Additional environment variables to set on a crate's
             `cargo_build_script::env` attribute.
         build_script_toolchains (list, optional): A list of labels to set on a crates's `cargo_build_script::toolchains` attribute.
+        build_script_use_default_shell_env (int, optional): Whether or not to include the default shell environment for the build
+            script action.
         compile_data (list, optional): A list of labels to add to a crate's `rust_library::compile_data` attribute.
         compile_data_glob (list, optional): A list of glob patterns to add to a crate's `rust_library::compile_data`
             attribute.
@@ -169,8 +172,8 @@ def _annotation(
         rustc_flags (list, optional): A list of strings to set on a crate's `rust_library::rustc_flags` attribute.
         shallow_since (str, optional): An optional timestamp used for crates originating from a git repository
             instead of a crate registry. This flag optimizes fetching the source code.
-        override_targets (dict, optional): A dictionary of alternate tagets to use when something depends on this crate to allow
-            the parent repo to provide its own version of this dependency. Keys can be `proc_marco`, `build_script`, `lib`, `bin`.
+        override_targets (dict, optional): A dictionary of alternate targets to use when something depends on this crate to allow
+            the parent repo to provide its own version of this dependency. Keys can be `proc-marco`, `custom-build`, `lib`, `bin`.
 
     Returns:
         string: A json encoded string containing the specified version and separately all other inputs.
@@ -197,6 +200,7 @@ def _annotation(
             build_script_rundir = build_script_rundir,
             build_script_rustc_env = build_script_rustc_env,
             build_script_toolchains = _stringify_list(build_script_toolchains),
+            build_script_use_default_shell_env = build_script_use_default_shell_env,
             compile_data = _stringify_list(compile_data),
             compile_data_glob = compile_data_glob,
             crate_features = crate_features,
@@ -230,7 +234,21 @@ def _stringify_label(value):
 def _stringify_list(values):
     if not values:
         return values
-    return [str(x) for x in values]
+
+    if type(values) == "list":
+        return [str(x) for x in values]
+
+    # if values is a struct with a "selects" attribute, assume it was created with
+    # crate.select() and map values for all platforms
+    if type(values) == "struct" and type(values.selects) != "NoneType":
+        new_selects = {}
+
+        for k, v in values.selects.items():
+            new_selects[k] = [str(x) for x in v]
+
+        return struct(common = [str(x) for x in values.common], selects = new_selects)
+
+    fail("Cannot stringify unknown type for list '{}'".format(values))
 
 def _select(common, selects):
     """A Starlark Select for `crate.annotation()`.
