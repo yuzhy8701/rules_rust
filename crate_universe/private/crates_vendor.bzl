@@ -469,15 +469,13 @@ def _crates_vendor_impl(ctx):
         is_executable = True,
     )
 
+    runfiles = ctx.runfiles(files = cargo_bazel_runfiles, transitive_files = toolchain.all_files)
     if runner.basename.endswith(".sh"):
-        cargo_bazel_runfiles.append(ctx.file._bash_runfiles)
+        runfiles = runfiles.merge(ctx.attr._bash_runfiles[DefaultInfo].default_runfiles)
 
     return DefaultInfo(
         files = depset([runner]),
-        runfiles = ctx.runfiles(
-            files = cargo_bazel_runfiles,
-            transitive_files = toolchain.all_files,
-        ),
+        runfiles = runfiles,
         executable = runner,
     )
 
@@ -530,6 +528,10 @@ CRATES_VENDOR_ATTRS = {
         ),
         default = True,
     ),
+    "generate_cargo_toml_env_vars": attr.bool(
+        doc = "Whether to generate cargo_toml_env_vars targets.",
+        default = True,
+    ),
     "generate_target_compatible_with": attr.bool(
         doc = "DEPRECATED: Moved to `render_config`.",
         default = True,
@@ -579,7 +581,6 @@ CRATES_VENDOR_ATTRS = {
     "_bash_runfiles": attr.label(
         doc = "The runfiles library for bash.",
         cfg = "target",
-        allow_single_file = True,
         default = Label("@bazel_tools//tools/bash/runfiles"),
     ),
 }

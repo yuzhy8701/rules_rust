@@ -163,6 +163,8 @@ impl Digest {
             OsStr::new("HOME"),
             OsStr::new("HOMEDRIVE"),
             OsStr::new("PATHEXT"),
+            OsStr::new("NIX_LD"),
+            OsStr::new("NIX_LD_LIBRARY_PATH"),
         ];
         let env = std::env::vars_os().filter(|(var, _)| safe_vars.contains(&var.as_os_str()));
 
@@ -245,7 +247,7 @@ mod test {
         );
 
         assert_eq!(
-            Digest("5c4eb4dfe2ceffc04ac93fb5a0775320a8e1cdb186bbb1f10b42daaa71a4cede".to_owned()),
+            Digest("edd73970897c01af3bb0e6c9d62f572203dd38a03c189dcca555d463990aa086".to_owned()),
             digest,
         );
     }
@@ -290,7 +292,7 @@ mod test {
         );
 
         assert_eq!(
-            Digest("1b234facd16c77da17df02dc1bad7bcd08154883d27c04fc35aadb36b3c305a6".to_owned()),
+            Digest("17a426b0cb5c1eff5114997a35562bc8560afd365ec80ae31b3dcc449ee1fa60".to_owned()),
             digest,
         );
     }
@@ -321,7 +323,7 @@ mod test {
         );
 
         assert_eq!(
-            Digest("47243edc7d498dfa903a059d347a7ff15ff76b67a592a68545355e97874f8c9d".to_owned()),
+            Digest("1e01331686ba1f26f707dc098cd9d21c39d6ccd8e46be03329bb2470d3833e15".to_owned()),
             digest,
         );
     }
@@ -370,7 +372,7 @@ mod test {
         );
 
         assert_eq!(
-            Digest("95e72c48a8560a37d033c381923edabcce7b51af2cd793b15db61b1cb0a8b9dd".to_owned()),
+            Digest("45ccf7109db2d274420fac521f4736a1fb55450ec60e6df698e1be4dc2c89fad".to_owned()),
             digest,
         );
     }

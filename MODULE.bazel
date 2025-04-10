@@ -2,48 +2,27 @@
 
 module(
     name = "rules_rust",
-    version = "0.57.1",
+    version = "0.60.0",
 )
 
 ###############################################################################
 ## Core
 ###############################################################################
 
-bazel_dep(
-    name = "bazel_features",
-    version = "1.21.0",
-)
-bazel_dep(
-    name = "bazel_skylib",
-    version = "1.7.1",
-)
-bazel_dep(
-    name = "platforms",
-    version = "0.0.11",
-)
-bazel_dep(
-    name = "rules_cc",
-    version = "0.0.17",
-)
-bazel_dep(
-    name = "rules_license",
-    version = "1.0.0",
-)
-bazel_dep(
-    name = "rules_shell",
-    version = "0.3.0",
-)
-bazel_dep(
-    name = "apple_support",
-    version = "1.17.1",
-    repo_name = "build_bazel_apple_support",
-)
+bazel_dep(name = "bazel_features", version = "1.21.0")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_license", version = "1.0.0")
+bazel_dep(name = "rules_shell", version = "0.3.0")
+bazel_dep(name = "apple_support", version = "1.17.1", repo_name = "build_bazel_apple_support")
 
 internal_deps = use_extension("//rust/private:internal_extensions.bzl", "i")
 use_repo(
     internal_deps,
     "rrra",
     "rrra__anyhow-1.0.71",
+    "rrra__camino-1.1.9",
     "rrra__clap-4.3.11",
     "rrra__env_logger-0.10.0",
     "rrra__itertools-0.11.0",
@@ -58,6 +37,11 @@ use_repo(
     cargo_internal_deps,
     "rrcti",
     "rrcti__cargo_toml-0.20.5",
+    "rules_rust_ctve",
+    "rules_rust_ctve__cargo-util-schemas-0.3.1",
+    "rules_rust_ctve__pathdiff-0.1.0",
+    "rules_rust_ctve__semver-1.0.25",
+    "rules_rust_ctve__toml-0.8.20",
 )
 
 rust = use_extension("//rust:extensions.bzl", "rust")
@@ -89,27 +73,15 @@ use_repo(
     "generated_inputs_in_external_repo",
     "libc",
     "rtra",
-    "rtra__serde-1.0.217",
-    "rtra__serde_json-1.0.138",
+    "rtra__serde-1.0.219",
+    "rtra__serde_json-1.0.140",
     "rules_rust_test_load_arbitrary_tool",
     "rules_rust_toolchain_test_target_json",
 )
 
-bazel_dep(
-    name = "rules_python",
-    version = "0.40.0",
-    dev_dependency = True,
-)
-bazel_dep(
-    name = "rules_testing",
-    version = "0.7.0",
-    dev_dependency = True,
-)
-bazel_dep(
-    name = "bazel_ci_rules",
-    version = "1.0.0",
-    dev_dependency = True,
-)
+bazel_dep(name = "rules_python", version = "0.40.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
+bazel_dep(name = "bazel_ci_rules", version = "1.0.0", dev_dependency = True)
 
 ###############################################################################
 ## Crate Universe
@@ -125,18 +97,17 @@ use_repo(
     "cargo_bazel.buildifier-darwin-arm64",
     "cargo_bazel.buildifier-linux-amd64",
     "cargo_bazel.buildifier-linux-arm64",
-    "cargo_bazel.buildifier-linux-s390x",
     "cargo_bazel.buildifier-windows-amd64.exe",
     "cui",
     "cui__anyhow-1.0.95",
     "cui__camino-1.1.9",
-    "cui__cargo-lock-10.0.1",
+    "cui__cargo-lock-10.1.0",
     "cui__cargo-platform-0.1.9",
     "cui__cargo_metadata-0.19.1",
     "cui__cargo_toml-0.21.0",
     "cui__cfg-expr-0.17.2",
     "cui__clap-4.5.26",
-    "cui__crates-index-3.5.0",
+    "cui__crates-index-3.7.0",
     "cui__glob-0.3.2",
     "cui__hex-0.4.3",
     "cui__indoc-2.0.5",

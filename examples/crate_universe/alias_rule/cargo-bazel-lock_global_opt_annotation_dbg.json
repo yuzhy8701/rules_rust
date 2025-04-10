@@ -1,5 +1,5 @@
 {
-  "checksum": "6aa0731d453b4467b5797d1d34ddf154e29b1442e925240cf0b6f787e5b2e9d6",
+  "checksum": "71d212d498f7d3bb74c1cbb7224296c25eb1e8513ae0d391d1ed6794fb8e6c73",
   "crates": {
     "direct-cargo-bazel-deps 0.0.1": {
       "name": "direct-cargo-bazel-deps",
@@ -97,6 +97,9 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
+        ],
+        "compile_data_glob_excludes": [
+          "**/*.rs"
         ],
         "data_glob": [
           "**"

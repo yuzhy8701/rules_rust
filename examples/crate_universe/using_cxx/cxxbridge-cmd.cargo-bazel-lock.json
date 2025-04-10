@@ -1,5 +1,5 @@
 {
-  "checksum": "ee2efb031ab1619f63217a669387f08e8c980c0ec84f4e33a965009962981ae8",
+  "checksum": "4783bf935f14b1f0ef60e88a9f32c9a0539bf1e5f6e635732276121d3726e2b6",
   "crates": {
     "anstyle 1.0.1": {
       "name": "anstyle",
@@ -373,6 +373,9 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
+        ],
+        "compile_data_glob_excludes": [
+          "**/*.rs"
         ],
         "data_glob": [
           "**"
@@ -757,6 +760,9 @@
         "compile_data_glob": [
           "**"
         ],
+        "compile_data_glob_excludes": [
+          "**/*.rs"
+        ],
         "data_glob": [
           "**"
         ]
@@ -824,6 +830,9 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
+        ],
+        "compile_data_glob_excludes": [
+          "**/*.rs"
         ],
         "data_glob": [
           "**"
@@ -942,6 +951,9 @@
       "build_script_attrs": {
         "compile_data_glob": [
           "**"
+        ],
+        "compile_data_glob_excludes": [
+          "**/*.rs"
         ],
         "data_glob": [
           "**"

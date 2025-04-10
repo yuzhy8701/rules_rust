@@ -6,9 +6,15 @@
 #     bazel run @@//3rdparty:crates_vendor
 ###############################################################################
 
+load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
+
+cargo_toml_env_vars(
+    name = "cargo_toml_env_vars",
+    src = "Cargo.toml",
+)
 
 rust_library(
     name = "tiny_http",
@@ -30,6 +36,9 @@ rust_library(
     ),
     crate_root = "src/lib.rs",
     edition = "2018",
+    rustc_env_files = [
+        ":cargo_toml_env_vars",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -82,8 +91,8 @@ rust_library(
     version = "0.12.0",
     deps = [
         "@rrwbd__ascii-1.1.0//:ascii",
-        "@rrwbd__chunked_transfer-1.4.1//:chunked_transfer",
-        "@rrwbd__httpdate-1.0.2//:httpdate",
-        "@rrwbd__log-0.4.19//:log",
+        "@rrwbd__chunked_transfer-1.5.0//:chunked_transfer",
+        "@rrwbd__httpdate-1.0.3//:httpdate",
+        "@rrwbd__log-0.4.22//:log",
     ],
 )

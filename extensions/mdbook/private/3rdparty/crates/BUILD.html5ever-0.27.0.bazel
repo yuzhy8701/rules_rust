@@ -6,10 +6,19 @@
 #     bazel run @@//private/3rdparty:crates_vendor
 ###############################################################################
 
-load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+load(
+    "@rules_rust//cargo:defs.bzl",
+    "cargo_build_script",
+    "cargo_toml_env_vars",
+)
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
+
+cargo_toml_env_vars(
+    name = "cargo_toml_env_vars",
+    src = "Cargo.toml",
+)
 
 rust_library(
     name = "html5ever",
@@ -31,6 +40,9 @@ rust_library(
     ),
     crate_root = "src/lib.rs",
     edition = "2021",
+    rustc_env_files = [
+        ":cargo_toml_env_vars",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -83,7 +95,7 @@ rust_library(
     version = "0.27.0",
     deps = [
         "@rmdbi__html5ever-0.27.0//:build_script_build",
-        "@rmdbi__log-0.4.25//:log",
+        "@rmdbi__log-0.4.27//:log",
         "@rmdbi__mac-0.1.1//:mac",
         "@rmdbi__markup5ever-0.12.1//:markup5ever",
     ],
@@ -124,6 +136,9 @@ cargo_build_script(
     ),
     edition = "2021",
     pkg_name = "html5ever",
+    rustc_env_files = [
+        ":cargo_toml_env_vars",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -137,9 +152,9 @@ cargo_build_script(
     version = "0.27.0",
     visibility = ["//visibility:private"],
     deps = [
-        "@rmdbi__proc-macro2-1.0.93//:proc_macro2",
-        "@rmdbi__quote-1.0.38//:quote",
-        "@rmdbi__syn-2.0.98//:syn",
+        "@rmdbi__proc-macro2-1.0.94//:proc_macro2",
+        "@rmdbi__quote-1.0.40//:quote",
+        "@rmdbi__syn-2.0.100//:syn",
     ],
 )
 
