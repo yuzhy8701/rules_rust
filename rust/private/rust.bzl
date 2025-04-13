@@ -750,12 +750,12 @@ _common_attrs = {
         doc = "A version to inject in the cargo environment variable.",
         default = "0.0.0",
     ),
+    "_allowlist_function_transition": attr.label(
+        default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+    ),
     "_stamp_flag": attr.label(
         doc = "A setting used to determine whether or not the `--stamp` flag is enabled",
         default = Label("//rust/private:stamp"),
-    ),
-    "_allowlist_function_transition": attr.label(
-        default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
     ),
 } | RUSTC_ATTRS
 

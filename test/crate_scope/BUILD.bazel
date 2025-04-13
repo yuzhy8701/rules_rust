@@ -46,7 +46,7 @@ rust_library(
     srcs = ["proc_macro_helper.rs"],
     data = select({
         "//rust/settings:proc_macro_scope": [":helper_data"],
-        # Analysis fails if rust_library doesn't propagate the condition above.
+        "//rust/settings:regular_crate_scope": [],
     }),
     edition = "2021",
     rustc_env = {"CARGO_MANIFEST_DIR": package_name()},
